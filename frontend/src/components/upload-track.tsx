@@ -13,6 +13,7 @@ import Header from "./header";
 import { useAudioContext } from "@/context/audio-context";
 import { processSong } from "@/utils/process-song";
 import { env } from "@/config/env";
+import { useEffect, useState } from "react";
 
 const animationVariants = {
   hidden: { opacity: 0, y: 100 },
@@ -20,16 +21,21 @@ const animationVariants = {
 };
 
 const UploadTrack = () => {
+  const [objectUrl, setObjectUrl] = useState<string | null>(null);
   const navigate = useNavigate();
+
   const {
     setOriginalAudioUrl,
     setProcessedAudioUrl,
     setCurrentAudioUrl,
     setIsOriginalAudio,
   } = useAudioContext();
+
   const dropzone = useDropzone({
     onDropFile: async (file: File) => {
-      setOriginalAudioUrl(URL.createObjectURL(file));
+      const url = URL.createObjectURL(file);
+      setObjectUrl(url);
+      setOriginalAudioUrl(url);
 
       toast.promise(processSong(file), {
         loading: "Uploading...",
@@ -62,6 +68,14 @@ const UploadTrack = () => {
     },
   });
 
+  useEffect(() => {
+    return () => {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [objectUrl]);
+
   return (
     <div className="">
       <Dropzone {...dropzone}>
@@ -89,10 +103,8 @@ const UploadTrack = () => {
               variants={animationVariants}
               className="flex w-full justify-center"
             >
-              <DropzoneTrigger className="w-1/4 text-center border border-primary rounded-md p-2 bg-transparent hover:bg-primary hover:text-white transition-all duration-300">
-                <p className="text-primary hover:text-white transition-all duration-300">
-                  Choose file
-                </p>
+              <DropzoneTrigger className="w-1/4 text-center border border-primary rounded-md p-2 bg-transparent text-primary hover:bg-primary hover:text-white transition-all duration-300">
+                <p className="">Choose file</p>
               </DropzoneTrigger>
             </motion.div>
           </DropZoneArea>

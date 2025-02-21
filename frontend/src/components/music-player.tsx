@@ -1,16 +1,21 @@
 import { useWavesurfer } from "@wavesurfer/react";
 import { Pause, Play, Volume2 } from "lucide-react";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, MutableRefObject } from "react";
 import { Slider } from "./ui/slider";
 import { useAudioContext } from "@/context/audio-context";
 
-export default function MusicPlayer() {
+interface MusicPlayerProps {
+  audioElementRef?: MutableRefObject<HTMLAudioElement | null>;
+}
+
+export default function MusicPlayer({ audioElementRef }: MusicPlayerProps) {
   const wavesurferRef = useRef<HTMLDivElement | null>(null);
   const [volume, setVolume] = useState(1);
   const [currentTime, setCurrentTime] = useState("0:00");
   const [duration, setDuration] = useState("0:00");
 
-  const { currentAudioUrl, togglePlayPause, isPlaying } = useAudioContext();
+  const { currentAudioUrl, togglePlayPause, isPlaying, isEQEnabled } =
+    useAudioContext();
 
   const { wavesurfer } = useWavesurfer({
     container: wavesurferRef,
@@ -45,6 +50,17 @@ export default function MusicPlayer() {
     };
   }, [wavesurfer, isPlaying]);
 
+  useEffect(() => {
+    if (wavesurfer) {
+      const current = wavesurfer.getCurrentTime();
+      if (audioElementRef && audioElementRef.current) {
+        audioElementRef.current.currentTime = current;
+      }
+      console.log("wavesurfer", current);
+      console.log("player", audioElementRef?.current?.currentTime);
+    }
+  }, [isEQEnabled, audioElementRef, wavesurfer]);
+
   const formatTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = Math.floor(seconds % 60);
@@ -52,6 +68,15 @@ export default function MusicPlayer() {
   };
 
   const onPlayPause = () => {
+    if (wavesurfer) {
+      const current = wavesurfer.getCurrentTime();
+      if (audioElementRef && audioElementRef.current) {
+        audioElementRef.current.currentTime = current;
+      }
+      console.log("wavesurfer", current);
+      console.log("player", audioElementRef?.current?.currentTime);
+    }
+
     togglePlayPause();
   };
 

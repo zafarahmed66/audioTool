@@ -17,22 +17,30 @@ const animationVariants = {
 };
 
 const EnhancePage = () => {
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const weq8Ref = useRef<WEQ8Runtime | null>(null);
   const audioSourceRef = useRef<MediaElementAudioSourceNode | null>(null);
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
   const weq8UIRef = useRef<HTMLElement | null>(null);
 
   const navigate = useNavigate();
-  const { currentAudioUrl, isPlaying, isEQEnabled, setIsEQEnabled } =
-    useAudioContext();
+  const {
+    currentAudioUrl,
+    isPlaying,
+    isEQEnabled,
+    setIsEQEnabled,
+    audioContextRef,
+    weq8Ref,
+  } = useAudioContext();
+
+  useEffect(() => {
+    setIsEQEnabled(true);
+  }, [isEQEnabled, setIsEQEnabled]);
 
   useEffect(() => {
     if (!currentAudioUrl) {
       toast.warning("Please upload an audio file first");
       navigate("/");
     }
-  }, [navigate]);
+  }, [navigate, currentAudioUrl]);
 
   useEffect(() => {
     if (!currentAudioUrl) {
@@ -85,16 +93,14 @@ const EnhancePage = () => {
         console.error("Error initializing audio:", error);
       }
     };
-
     initializeAudio();
-  }, [currentAudioUrl, navigate, isPlaying]);
+  }, [currentAudioUrl, navigate, isPlaying, audioContextRef, weq8Ref]);
 
   const handleEnableEQ = async () => {
-    if (audioContextRef.current && audioElementRef.current) {
-      audioElementRef.current.currentTime = audioContextRef.current.currentTime;
-    }
     await audioContextRef.current?.resume();
-    audioElementRef.current?.play();
+    if (isPlaying) {
+      audioElementRef.current?.play();
+    }
     setIsEQEnabled(true);
   };
 
@@ -175,7 +181,7 @@ const EnhancePage = () => {
         variants={animationVariants}
         className="w-full z-[999999]"
       >
-        <MusicPlayer key={"enhance"} />
+        <MusicPlayer key={"enhance"} audioElementRef={audioElementRef} />
       </motion.div>
 
       <BackgroundBeams />
