@@ -33,7 +33,6 @@ export const enhance = async (req: Request, res: Response) => {
         fs.unlinkSync(filePath);
 
 
-        console.log(response)
 
     
         res.json({
